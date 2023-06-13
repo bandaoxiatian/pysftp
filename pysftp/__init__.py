@@ -106,9 +106,10 @@ class Connection(object):   # pylint:disable=r0902,r0904
     :raises HostKeysException:
 
     """
-
+    # feat: log default.
+    # reference: https://stackoverflow.com/questions/29128205/debug-option-for-python-sftp-script-like-ftp-setdebug1-to-log-messages
     def __init__(self, host, username=None, private_key=None, password=None,
-                 port=22, private_key_pass=None, ciphers=None, log=False,
+                 port=22, private_key_pass=None, ciphers=None, log=1,
                  cnopts=None, default_path=None):
         # starting point for transport.connect options
         self._tconnect = {'username': username, 'password': password,
@@ -173,7 +174,9 @@ class Connection(object):   # pylint:disable=r0902,r0904
     def _start_transport(self, host, port):
         '''start the transport and set the ciphers if specified.'''
         try:
-            self._transport = paramiko.Transport((host, port))
+            # Fix Authentication Failed.
+            # reference: https://stackoverflow.com/questions/70565357/paramiko-authentication-fails-with-agreed-upon-rsa-sha2-512-pubkey-algorithm
+            self._transport = paramiko.Transport((host, port), disabled_algorithms=dict(pubkeys=["rsa-sha2-512", "rsa-sha2-256"]))
             # Set security ciphers if set
             if self._cnopts.ciphers is not None:
                 ciphers = self._cnopts.ciphers
